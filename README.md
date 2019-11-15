@@ -1,1 +1,3 @@
 # glitch-fun
+
+readme edit
