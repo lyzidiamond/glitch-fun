@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>November 1: Points</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      .map {
+        position: relative;
+        width: 100%;
+        height: 60vw;
+        max-width: 100%;
+        max-height: 60%;
+      }
+
+      #map1 {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      1: Points
+    </h1>
+    <h2>
+      All earthquakes in the last hour as recorded by USGS
+    </h2>
+    <h3>
+      <a href="/">Back to home</a>
+    </h3>
+    <p>This map uses <a href="https://mapbox.com/mapbox-gl-js">Mapbox GL JS</a> to display data from the USGS <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php">Earthquakes GeoJSON feed</a>. The map updates every 2 seconds and the popups tell you approximately how many minutes ago the earthquake was recorded.</p>
+    <p>
+      Things I could add to this map to make it more complete that you should totally do by remixing this project on Glitch: a legend, more info in the popup, zoom to features.
+    </p>
+
+    <div class="map">
+      <div id="map1"></div>
+    </div>
+
+    <script>
+      // initialize the map
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoibHl6aWRpYW1vbmQiLCJhIjoiRkh4OW9layJ9.P2o48WlCqjhGmqoFJl3C_A";
+      var map = new mapboxgl.Map({
+        container: "map1", // container id
+        style: "mapbox://styles/mapbox/dark-v10", // stylesheet location
+        center: [-180, 20], // starting position [lng, lat]
+        zoom: 1 // starting zoom
+      });
+      
+      // this is where the data is coming from
+      const url =
+        "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson";
+      
+      // wait for the map to load before we do anything to it
+      map.on("load", () => {
+        
+        // add the data to the map as a source
+        map.addSource("earthquakes-all-hour", {
+          type: "geojson",
+          data: url
+        });
+        
+        // add a style layer to the map to visualize it
+        // set color and radius based on magnitude
+        map.addLayer({
+          id: "earthquakes-last-hour",
+          type: "circle",
+          source: "earthquakes-all-hour",
+          paint: {
+            "circle-color": [
+              "step",
+              ["get", "mag"],
+              "rgba(240,128,128,.8)",
+              1,
+              "rgba(178,34,34,.8)",
+              3,
+              "rgba(220,20,60,.8)"
+            ],
+            "circle-radius": ["step", ["get", "mag"], 5, 1, 10, 3, 20],
+            "circle-stroke-color": [
+              "step",
+              ["get", "mag"],
+              "rgb(240,128,128)",
+              1,
+              "rgb(178,34,34)",
+              3,
+              "rgb(220,20,60)"
+            ]
+          }
+        });
+        
+        // re-fetch the data every 2 seconds
+        window.setInterval(function() {
+          map.getSource("earthquakes-all-hour").setData(url);
+        }, 2000);
+
+        // EVENTS
+        
+        // create a popup when a user clicks on an earthquake
+        map.on("click", "earthquakes-last-hour", e => {
+          let coordinates = e.features[0].geometry.coordinates.slice();
+          let nowTime = Date.now();
+          let quakeTime = e.features[0].properties.time;
+          let elapsedTime = nowTime - quakeTime;
+          let minutesSince = Math.floor(elapsedTime / 60000);
+          let description =
+            "<a href='" +
+            e.features[0].properties.url +
+            "' target='_blank'>" +
+            e.features[0].properties.title +
+            "</a><br />~" +
+            minutesSince +
+            " minutes ago";
+
+          // Ensure that if the map is zoomed out such that multiple
+          // copies of the feature are visible, the popup appears
+          // over the copy being pointed to.
+          // From this example: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(description)
+            .addTo(map);
+        });
+        
+        // fun cursor stuff
+        map.on("mouseenter", "earthquakes-last-hour", function() {
+          map.getCanvas().style.cursor = "default";
+        });
+        map.on("mouseleave", "earthquakes-last-hour", function() {
+          map.getCanvas().style.cursor = "";
+        });
+      });
+    </script>
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+  </body>
+</html>

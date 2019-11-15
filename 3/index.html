@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>November 3: Polygons</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      img {
+        max-width: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      3: Polygons
+    </h1>
+    <h2>
+      Bathymetry in five projections
+    </h2>
+    <h3>
+      <a href="/">Back to home</a>
+    </h3>
+    <p>
+      These maps show global
+      <a
+        href="https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-bathymetry/"
+        >bathymetry data</a
+      >
+      from Natural Earth in five projections:
+      <a href="https://en.wikipedia.org/wiki/Robinson_projection">Robinson</a>,
+      <a href="https://en.wikipedia.org/wiki/Equidistant_conic_projection"
+        >World Equidistant Conic</a
+      >, <a href="https://en.wikipedia.org/wiki/Aitoff_projection">Aitoff</a>,
+      North Pole
+      <a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection"
+        >Azimuthal Equidistant</a
+      >, and South Pole Azimuthal Equidistant. I made these maps using
+      <a href="https://qgis.org">QGIS</a> and exported them as static images.
+    </p>
+
+    <p>
+      The bathymetry data from Natural Earth comes as a series of nested
+      polygons at depths of 0, -200, -1,000, -2,000, -3,000, -4,000, -5,000,
+      -6,000, -7,000, -8,000, -9,000, and -10,000 meters. I symbolized each
+      layer on a continuous color scale (lighter purple = less deep, darker
+      purple = more deep) and then placed the layers on top of each other.
+    </p>
+
+    <h3>
+      Why projections matter
+    </h3>
+    <p>
+      A <strong>projection</strong> is a way to represent a 3D object (like the
+      planet) on a 2D surface (like a map). Every projection is a compromise:
+      there are infinite ways to display the Earth, but each of them introduces
+      one or more vectors of distortion. Some map projections preserve
+      directionality and angles, but distort the relative size of the objects on
+      the map (like Mecator, which stretches towards the poles and squishes in
+      the middle). Others preserve land area, but distort the shape of features
+      (like Peters). Most maps we see these days are in Spherical Mercator, the
+      most popular projection for web and mobile maps. But maps are for more
+      than just getting from one place to another, and different projections can
+      highlight other aspects of your map that are more important for your use
+      case.
+    </p>
+
+    <h3>
+      Here are the maps!
+    </h3>
+    <p>
+      Click each image for full size.
+    </p>
+    <figure>
+      <a
+        href="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-robinson.png"
+        ><img
+          src="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-robinson.png?v=1572975899555"
+      /></a>
+      <figcaption>
+        Robinson
+      </figcaption>
+    </figure>
+    <figure>
+      <a
+        href="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ea.png"
+        ><img
+          src="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ea.png?v=1572975896478"
+      /></a>
+      <figcaption>Equidistant Conic</figcaption>
+    </figure>
+    <figure>
+      <a
+        href="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-aitoff.png"
+        ><img
+          src="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-aitoff.png?v=1572975892241"
+      /></a>
+      <figcaption>Aitoff</figcaption>
+    </figure>
+    <figure>
+      <a
+        href="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ae-north.png"
+        ><img
+          src="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ae-north.png?v=1572975889887"
+      /></a>
+      <figcaption>North Pole Azimuthal Equidistant</figcaption>
+    </figure>
+    <figure>
+      <a
+        href="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ae-south.png"
+        ><img
+          src="https://cdn.glitch.com/f03dd259-ad1b-45ea-857d-bf309cb89862%2Fbathy-ae-south.png?v=1572975889776"
+      /></a>
+      <figcaption>South Pole Azimuthal Equidistant</figcaption>
+    </figure>
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+  </body>
+</html>

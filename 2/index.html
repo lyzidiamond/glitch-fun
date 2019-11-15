@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>November 2: Lines</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+      integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+      crossorigin=""
+    ></script>
+    <style>
+      .map {
+        position: relative;
+        width: 100%;
+        height: 30vw; /* 100% */
+        max-width: 100%;
+        max-height: 30%;
+      }
+
+      #map1 {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      2: Lines
+    </h1>
+    <h2>
+      Global rail lines
+    </h2>
+    <h3>
+      <a href="/">Back to home</a>
+    </h3>
+    <p>
+      This map uses <a href="https://leafletjs.com">Leaflet</a> to display
+      global 10m railroad data from
+      <a href="https://naturalearthdata.com">Natural Earth</a>. The map is
+      loading a raster tileset, which I created by uploading the data to
+      <a href="https://studio.mapbox.com">Mapbox Studio</a>, creating a <a href="https://api.mapbox.com/styles/v1/lyzidiamond/ck2kskdp80sf01cpl7j2ltw82.html?fresh=true&title=true&access_token=pk.eyJ1IjoibHl6aWRpYW1vbmQiLCJhIjoiRkh4OW9layJ9.P2o48WlCqjhGmqoFJl3C_A#3.5/31.56/-98.63">map
+      style</a>, and using Mapbox's
+      <a href="https://docs.mapbox.com/api/maps/#static-tiles"
+        >Static Tiles API</a
+      >. <strong>A cool thing:</strong> the style has a style across a zoom range, starting as a salmon color at zoom 3 and becoming purple by zoom 8. When raster tiles are created from this data, each zoom's tiles have a different color: closer to 3 and the color is salmon, closer to 8 and the color is purple. So neat!
+    </p>
+    <p>
+      <em
+        >A note: I used Leaflet here to load a Mapbox style as a raster tileset
+        to show how to do it. In most other cases, if I really wanted to create
+        a map to show railroad data I would do it with Mapbox GL JS so the data
+        could be interactive. Loading a Mapbox style as a raster tileset is
+        useful if you're locked into using a web mapping library that requires
+        raster tiles, but for the most part you can make complex data
+        interactive by using Mapbox GL JS or another library that consumes
+        vector tiles and allows for interactions. But for this challenge I'm
+        trying to broaden my horizons and use lots of different tools, and
+        "lines" seemed like a good prompt to show off an example that I might
+        not make in real life but demonstrates the concept.</em
+      >
+    </p>
+
+    <div class="map">
+      <div id="map1"></div>
+    </div>
+
+    <script>
+      var mymap = L.map("map1", {
+        minZoom: 4,
+        maxZoom: 11
+      })
+        .fitBounds([[36.102376, -8.789063], [71.773941, 43.59375]])
+        .setZoom(4);
+
+      L.tileLayer(
+        "https://api.mapbox.com/styles/v1/lyzidiamond/ck2kskdp80sf01cpl7j2ltw82/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibHl6aWRpYW1vbmQiLCJhIjoiRkh4OW9layJ9.P2o48WlCqjhGmqoFJl3C_A",
+        {
+          tileSize: 512,
+          zoomOffset: -1,
+          attribution:
+            '© <a href="https://www.mapbox.com/map-feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }
+      ).addTo(mymap);
+    </script>
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+  </body>
+</html>

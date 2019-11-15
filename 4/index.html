@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>November 4: Hexagons(!)</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      img {
+        max-width: 50%;
+      }
+    </style>
+
+    <script src="//unpkg.com/d3-hexgrid"></script>
+    <script src="//unpkg.com/d3"></script>
+    <script src="//unpkg.com/d3-geo-projection"></script>
+    <script src="//unpkg.com/d3-hexbin"></script>
+  </head>
+  <body>
+    <h1>
+      4: Hexagons
+    </h1>
+    <h2>
+      New York public recycling bins, hexagon style
+    </h2>
+    <h3>
+      <a href="/">Back to home</a>
+    </h3>
+    <p></p>
+    <div id="container"></div>
+    <script>
+      let projection;
+      let path;
+      // axios -> fetch
+      // d3, d3-geo-projection, d3-hexgrid
+
+      async function getData() {
+        try {
+          const [land, recycling] = await Promise.all([
+            fetch("https://data.cityofnewyork.us/resource/7t3b-ywvw.json").then(
+              resp => resp.json()
+            ),
+            fetch("https://data.cityofnewyork.us/resource/sxx4-xhzg.json").then(
+              resp => resp.json()
+            )
+          ]);
+
+          console.log(land, recycling);
+
+          const landGeoJSON = makeGeoJSON(land, ["boro_name"]);
+          const recyclingGeoJSON = makeGeoJSON(recycling, [
+            "site_type",
+            "borough"
+          ]);
+          
+          // set projection set path
+          projection = d3.geoAlbers().fitSize([w, h], land);
+          path = d3.geoPath().projection(projection)
+
+          makeTheMap(landGeoJSON, recyclingGeoJSON);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      function makeGeoJSON(dataArray, propsList) {
+        const geojsonFeaturesArray = dataArray.map(obj => {
+          let props = {};
+          propsList.forEach(prop => {
+            props[prop] = obj[prop];
+          });
+          return {
+            type: "Feature",
+            geometry: obj.the_geom,
+            properties: props
+          };
+        });
+        return {
+          type: "FeatureCollection",
+          features: geojsonFeaturesArray
+        };
+      }
+
+      const width = 1000;
+      const height = 600;
+      const r = 3;
+      const c = {
+        fillLand: "#f8f8f8",
+        fillLandDark: "#eee",
+        strokeLand: "#bbb",
+        strokeLandLight: "#ddd",
+        fillHex: "cornflowerblue",
+        fillHexVeryLight: "#d0dff9",
+        fillHexLight: "#a2bff4",
+        fillHexDark: "#3c598e",
+        strokeHex: "#999"
+      };
+      
+      
+      // edge canvas
+      // in a separate function!!!!!!!!
+      
+      function makeEdgeCanvas(land) {
+        const canvas = DOM.canvas(w, h)
+        const context = canvas.getContext('2d')
+        path.context(context)
+        context.beginPath()
+        path(land)
+        context.lineWidth = edgeBand
+        context.strokeStyle = c.strokeLandLight, context.stroke();
+      }
+
+      // comments here
+      function makeTheMap(land, recycling) {
+        // partial binning
+
+        // make a hexbin
+        const hexbin = d3
+          .hexbin()
+          .extent([[0, 0], [width, height]])
+          .radius(r);
+
+        // make a canvas, put it in container div, set width and height
+        const canvas = d3
+          .select("#container")
+          .append("canvas")
+          .attr("width", width)
+          .attr("height", height);
+
+        // centers of hexes
+        const centers = hexbin.centers();
+        // context
+        const context = canvas.node().getContext("2d");
+
+        // make a  projection to fit land
+        const projection = d3.geoAlbers().fitSize([width, height], land);
+        // make a geoPath in that projection
+        const path = d3.geoPath().projection(projection);
+        // make a hexgrid container with land input data
+        // const hexgrid = d3
+        //   .hexgrid()
+        //   .extent([width, height])
+        //   .geography(land)
+        //   .projection(projection)
+        //   .pathGenerator(path);
+        // // make a hexgrid on top of the container
+        // const hex = hexgrid(recycling);
+        
+        // add image
+        path.context(context);
+        context.beginPath();
+        path(land);
+        context.fillStyle = c.fillLandDark;
+        context.fill();
+
+        // get imagedata to create a pixelated version
+        const imageData = context.getImageData(0, 0, width, height).data;
+        // strip rgb values, only care about alpha
+        const imageDataAlpha = imageData.filter((d, i) => i % 4 === 3);
+
+        // get the centers that overlap with land (full alpha)
+        const imageCenters = centers.filter(
+          d => imageDataAlpha[Math.floor(d[0]) + Math.floor(d[1]) * width]
+        );
+        
+        const canvasHexagon = new Path2D(hexbin.hexagon());
+        context.lineWidth = 1;
+        context.strokeStyle = c.fillHex;
+
+//         context.beginPath();
+//         imageCenters.forEach(d => {
+//           context.translate(d[0], d[1]);
+//           d3
+//             .symbol()
+//             .size(r)
+//             .context(context)();
+//           context.translate(-d[0], -d[1]);
+//         });
+//         // (context.fillStyle = c.fillHex), context.fill();
+        
+        // tesselated hexagons
+        imageCenters.forEach(d => {
+          context.translate(d[0], d[1]);
+          context.stroke(canvasHexagon);
+          context.translate(-d[0], -d[1]);
+        });
+        
+        // partial polys
+        context.beginPath()
+        path(land)
+        context.lineWidth = edgeBand
+        context.strokeStyle = c.strokeLandLight, context.stroke();
+
+        
+
+        
+
+//         context.beginPath();
+//         centers.forEach(d => {
+//           context.translate(d[0], d[1]);
+//           d3
+//             .symbol()
+//             .size(r)
+//             .context(context)();
+//           context.translate(-d[0], -d[1]);
+//         });
+//         context.fillStyle = c.fillHex;
+//         // context.fill();
+
+//         context.fillStyle = c.fillHex;
+//         context.strokeStyle = c.fillHex;
+//         context.lineWidth = 0.5;
+//         context.beginPath();
+//         centers.forEach(d => {
+//           context.translate(d[0], d[1]);
+//           d3
+//             .symbol()
+//             .size(r / 2)
+//             .context(context)();
+//           context.stroke(canvasHexagon);
+//           context.translate(-d[0], -d[1]);
+//         });
+        // context.fill();
+
+//         const recyclingColors = d3
+//           .scaleSequential(t => {
+//             const tNew = Math.pow(t, power);
+//             return d3.interpolateViridis(tNew);
+//           })
+//           .domain([...hex.grid.extentPointDensity].reverse());
+
+//         var svg = d3
+//           .select("body")
+//           .append("svg")
+//           .attr("width", width)
+//           .attr("height", height);
+
+//         // console.log(hex.hexagon())
+//         console.log(svg);
+
+//         svg
+//           .selectAll("path")
+//           .data(hex.grid.layout)
+//           .enter()
+//           .append("path")
+//           .attr("d", hex.hexagon())
+//           .attr("transform", d => `translate(${d.x} ${d.y})`)
+//           .style("fill", d =>
+//             !d.pointDensity ? "white" : recyclingColors(d.pointDensity)
+//           )
+//           .style("stroke", "#ccc");
+
+        //         console.log(svg);
+
+        // return svg;
+      }
+
+      getData();
+    </script>
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+  </body>
+</html>
